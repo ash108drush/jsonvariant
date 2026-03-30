@@ -8,7 +8,6 @@
 
 namespace json {
 using namespace std::literals;
-
 class Node;
 // Сохраните объявления Dict и Array без изменения
 using Dict = std::map<std::string, Node>;
@@ -21,51 +20,67 @@ public:
 };
 
 
-
-
-
-class Node {
+class Node {    
 public:
-    /* Реализуйте Node, используя std::variant */
-    using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
+   /* Реализуйте Node, используя std::variant */
+    using Value = std::variant<std::nullptr_t, int, double, std::string,bool,Array,Dict>;
+
     const Value& GetValue() const { return value_; }
 
-//   explicit Node(Array array);
-//    explicit Node(Dict map);
-    explicit Node(Value && value):value_(std::move(value)){};
-//    explicit Node(int value);
-//    explicit Node(std::string value);
+    Node() = default;
+    Node(Value value):value_(value){};
 
+    bool operator == (const Node& n) const {
+        return (n.GetValue() == value_);
+    }
+
+    bool operator != (const Node& n) const {
+        return !(*this == n);
+    }
+
+
+
+    bool IsInt() const {
+        return  std::holds_alternative<int>(value_);
+    };
+    bool IsDouble() const{
+        return  std::holds_alternative<double>(value_);
+    };
+    bool IsPureDouble() const{
+        if (!std::holds_alternative<double>(value_)) {
+            return false;  // Не double — сразу false
+        }
+        const double d = std::get<double>(value_);
+        return d != static_cast<int>(d);  // Если при приведении к int значение меняется — это «чистый» double
+    };
+
+    bool IsBool() const{
+        return  std::holds_alternative<bool>(value_);
+    };
+    bool IsString() const{
+        return  std::holds_alternative<std::string>(value_);
+    };
+    bool IsNull() const{
+        return  std::holds_alternative<std::nullptr_t>(value_);
+    };
+    bool IsArray() const{
+         return  std::holds_alternative<Array>(value_);
+    };
+    bool IsMap() const{
+         return  std::holds_alternative<Dict>(value_);
+    };
+
+    int AsInt() const;
+    bool AsBool() const;
+    double AsDouble() const;
+    const std::string& AsString() const;
     const Array& AsArray() const;
     const Dict& AsMap() const;
-    int AsInt() const;
-    const std::string& AsString() const;
 
 private:
-    // Шаблон, подходящий для вывода double и int
-    template <typename Value>
-    void PrintValue(const Value& value, std::ostream& out) {
-        out << value;
-    }
-
-    // Перегрузка функции PrintValue для вывода значений null
-    void PrintValue(std::nullptr_t, std::ostream& out) {
-        out << "null"sv;
-    }
-    // Другие перегрузки функции PrintValue пишутся аналогично
-
-
-
-
     Value value_;
-    Array as_array_;
-    Dict as_map_;
-    int as_int_ = 0;
-    std::string as_string_;
+
 };
-
-
-
 
 class Document {
 public:
@@ -76,6 +91,8 @@ public:
 private:
     Node root_;
 };
+
+
 
 Document Load(std::istream& input);
 
