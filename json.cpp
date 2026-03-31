@@ -1,5 +1,6 @@
 #include "json.h"
-
+#include <cstddef>
+#include <iostream>
 using namespace std;
 
 namespace json {
@@ -27,6 +28,7 @@ Node LoadInt(istream& input) {
         result *= 10;
         result += input.get() - '0';
     }
+
     return Node(result);
 }
 
@@ -194,9 +196,25 @@ Node LoadNode(istream& input) {
     } else if (c == '"') {
         return LoadNodeString(input);
     } else {
-        input.putback(c);
-        return LoadInt(input);
+        if(c =='n'){
+            std::string ull="";
+            input >> c;
+            ull+='u';
+            input >> c;
+            ull+='l';
+            input >> c;
+            ull+='l';
+            if(ull == "ull"){
+                return Node(nullptr);
+            }
+
+            }else{
+            input.putback(c);
+            return LoadInt(input);
+            }
+
     }
+    return Node(nullptr);
 }
 
 }  // namespace

@@ -2,7 +2,7 @@
 #include <chrono>
 #include <sstream>
 #include <string_view>
-
+#include <iostream>
 #include "json.h"
 
 using namespace json;
@@ -77,12 +77,14 @@ void TestNull() {
     assert(!(null_node != null_node1));
 
     const Node node = LoadJSON("null"s).GetRoot();
+    //std::cout << static_cast<std::string>(node.GetValue());
+    //assert(node.IsString());
     assert(node.IsNull());
-    assert(node == null_node);
+   assert(node == null_node);
     // Пробелы, табуляции и символы перевода строки между токенами JSON файла игнорируются
     assert(LoadJSON(" \t\r\n\n\r null \t\r\n\n\r "s).GetRoot() == null_node);
 }
-/*
+
 void TestNumbers() {
     const Node int_node{42};
     assert(int_node.IsInt());
@@ -119,7 +121,7 @@ void TestNumbers() {
     // Пробелы, табуляции и символы перевода строки между токенами JSON файла игнорируются
     assert(LoadJSON(" \t\r\n\n\r 0.0 \t\r\n\n\r ").GetRoot() == Node{0.0});
 }
-
+/*
 void TestStrings() {
     Node str_node{"Hello, \"everybody\""s};
     assert(str_node.IsString());

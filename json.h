@@ -27,8 +27,9 @@ public:
 
     const Value& GetValue() const { return value_; }
 
-    Node() = default;
+    Node():value_(nullptr) {};
     Node(Value value):value_(value){};
+
 
     bool operator == (const Node& n) const {
         return (n.GetValue() == value_);
@@ -37,8 +38,6 @@ public:
     bool operator != (const Node& n) const {
         return !(*this == n);
     }
-
-
 
     bool IsInt() const {
         return  std::holds_alternative<int>(value_);
