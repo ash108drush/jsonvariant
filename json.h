@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include <initializer_list>
 
 namespace json {
 using namespace std::literals;
@@ -29,6 +30,12 @@ public:
 
     Node():value_(nullptr) {};
     Node(Value value):value_(value){};
+    Node(std::initializer_list<Value> init):
+        items_(init.size()), size_(init.size()), capacity_(init.size()){
+        if(init.size() > 0){
+            copy(init.begin(), init.end(), begin());
+        }
+    }
 
 
     bool operator == (const Node& n) const {
@@ -96,5 +103,23 @@ private:
 Document Load(std::istream& input);
 
 void Print(const Document& doc, std::ostream& output);
+
+
+struct PrintContext {
+    std::ostream& out;
+    int indent_step = 4;
+    int indent = 0;
+
+    void PrintIndent() const {
+        for (int i = 0; i < indent; ++i) {
+            out.put(' ');
+        }
+    }
+
+    // Возвращает новый контекст вывода с увеличенным смещением
+    PrintContext Indented() const {
+        return {out, indent_step, indent_step + indent};
+    }
+};
 
 }  // namespace json
