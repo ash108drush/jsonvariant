@@ -1,6 +1,7 @@
 #include "json.h"
 #include <cstddef>
 #include <iostream>
+#include<cctype>
 using namespace std;
 
 namespace json {
@@ -18,6 +19,9 @@ Node LoadArray(istream& input) {
         }
         result.push_back(LoadNode(input));
     }
+    if (!input) {
+        throw ParsingError("Array parsing error!");
+    }
 
     return Node(std::move(result));
 }
@@ -31,8 +35,9 @@ Node LoadInt(istream& input) {
 
     return Node(result);
 }
+using Number = std::variant<int, double>;
 
-Node LoadNumber(std::istream& input) {
+Number LoadNumber(std::istream& input) {
     using namespace std::literals;
 
     std::string parsed_num;
@@ -88,19 +93,16 @@ Node LoadNumber(std::istream& input) {
         if (is_int) {
             // Сначала пробуем преобразовать строку в int
             try {
-                int num = std::stoi(parsed_num);
-                return Node(num);
+                return std::stoi(parsed_num);
             } catch (...) {
                 // В случае неудачи, например, при переполнении,
                 // код ниже попробует преобразовать строку в double
             }
         }
-        double dbl = std::stod(parsed_num);
-        return Node(dbl);
+        return std::stod(parsed_num);
     } catch (...) {
         throw ParsingError("Failed to convert "s + parsed_num + " to number"s);
     }
-    return Node();
 }
 
 std::string LoadString(std::istream& input) {
@@ -161,6 +163,7 @@ std::string LoadString(std::istream& input) {
     return s;
 }
 
+
 Node LoadNodeString(istream& input) {
     string line = LoadString(input);
     return Node(std::move(line));
@@ -179,9 +182,11 @@ Node LoadDict(istream& input) {
 
         string key = LoadNodeString(input).AsString();
         input >> c;
-        result.insert({move(key), LoadNode(input)});
+        result.insert({std::move(key), LoadNode(input)});
     }
-
+    if (!input) {
+        throw ParsingError("Dict parsing error!");
+    }
     return Node(std::move(result));
 }
 
@@ -196,26 +201,41 @@ Node LoadNode(istream& input) {
     } else if (c == '"') {
         return LoadNodeString(input);
     } else {
-        if(c =='n'){
-            std::string ull="";
-            input >> c;
-            ull+='u';
-            input >> c;
-            ull+='l';
-            input >> c;
-            ull+='l';
-            if(ull == "ull"){
+        if(std::isdigit(c)==0 && c !='-'){
+            std::string line;
+            std::getline(input, line);
+            if(c =='n' &&line.find("ull") != line.npos){
                 return Node(nullptr);
             }
-
-            }else{
-            input.putback(c);
-            return LoadInt(input);
+            if(c =='t' && line.find("rue") != line.npos){
+                return Node(true);
             }
+            if(c =='f' && line.find("alse") != line.npos){
+                return Node(false);
+            }
+        }else{
+            input.putback(c);
+           // std::string line;
+            //std::getline(input, line);
+           // cout << line;
+
+            Number num = LoadNumber(input);
+            if(std::holds_alternative<int>(num)){
+                return Node(get<int>(num));
+            }
+            if(std::holds_alternative<double>(num)){
+                return Node(get<double>(num));
+            }
+        }
+
+
+        }
+
+        throw ParsingError("Unknown character parsing error!");
 
     }
-    return Node(nullptr);
-}
+
+
 
 }  // namespace
 
@@ -223,61 +243,51 @@ Node LoadNode(istream& input) {
 
 
 const Array& Node::AsArray() const {
-    try {
-        return get<Array>(value_);;
-    } catch (const bad_variant_access& e) {
-        cout << e.what() << endl;
-        return {};
+    if (IsArray()) {
+        return get<Array>(value_);
     }
-
+    throw std::logic_error("Not <Map> value!");
 }
 
 const Dict& Node::AsMap() const {
-    try {
-    return get<Dict>(value_);
-    } catch (const bad_variant_access& e) {
-        cout << e.what() << endl;
-        return {};
+    if (IsMap()) {
+        return get<Dict>(value_);
     }
+    throw std::logic_error("Not <Map> value!");
 
 }
 
 
 int Node::AsInt() const {
-    try {
-        return get<int>(value_);
-    } catch (const bad_variant_access& e) {
-        cout << e.what() << endl;
-        return 0;
+    if (IsInt()) {
+        return std::get<int>(value_);
     }
+    throw std::logic_error("Not  <int> value!");
 }
 
 bool Node::AsBool() const {
-    try {
+    if(IsBool()){
         return get<bool>(value_);
-    } catch (const bad_variant_access& e) {
-        cout << e.what() << endl;
-        return false;
     }
+    throw std::logic_error("Not <bool> value!");
 }
 
 double Node::AsDouble() const
 {
-    try {
-        return get<double>(value_);
-    } catch (const bad_variant_access& e) {
-        cout << e.what() << endl;
-        return 0.0;
+    if (IsInt()) {
+        return std::get<int>(value_);
+    } else if (IsDouble()) {
+        return std::get<double>(value_);
     }
+
+    throw std::logic_error("Not <double> or <int> value!");
 }
 
 const string& Node::AsString() const {
-    try {
+   if (IsString()) {
         return get<std::string>(value_);
-    } catch (const bad_variant_access& e) {
-        cout << e.what() << endl;
-        return "";
     }
+    throw std::logic_error("Not <double> or <int> value!");
 }
 
 Document::Document(Node root)
@@ -305,25 +315,77 @@ void PrintValue(const Value& value, std::ostream& out) {
 }
 
 //std::string,bool,Array,Dict
-void PrintValue(const std::string str, std::ostream& out) {
-    out << str;
-}
+void PrintValue(const std::string value, std::ostream& out) {
+    using namespace std::literals;
+    out << "\""sv;
 
-void PrintValue(const Array& arr, std::ostream& out) {
-    for(const Node & nd:arr){
-        PrintNode( nd,out);
+    for (char c : value) {
+        switch (c)
+        {
+        case '\r':
+            out << "\\r"sv;
+            break;
+        case  '\t':
+            out << "\\t"sv;
+            break;
+        case  '\n':
+            out << "\\n"sv;
+            break;
+        case '"':
+            out << "\\\""sv;
+            break;
+        case '\\':
+            out << "\\\\"sv;
+            break;
+        default:
+            out << c;
+            break;
+        }
     }
+    out << "\""sv;
+};
 
-}
+void PrintValue(const bool value, std::ostream& out) {
+    if (value) {
+        out << "true";
+        return;
+    }
+    out << "false";
+};
+
+void PrintValue(const Array value, std::ostream& out) {
+    out << "[";
+    bool first = true;
+    for (auto & item : value) {
+        if (!first) {
+            out << ", ";
+        } else {
+            first = false;
+        }
+        PrintNode(item, out);
+    }
+    out << "]";
+    return;
+};
 
 //std::map<std::string, Node>;
-void PrintValue(const Dict& dict, std::ostream& out) {
-    for (const auto& [key, value] : dict) {
-        out << key;
-        PrintNode(value,out);
-    }
+void PrintValue(const Dict value, std::ostream& out) {
+    out << "{";
+    bool first = true;
+    for (auto iter{value.begin()}; iter != value.end(); ++iter) {
+        if (!first) {
+            out << ",";
+        } else {
+            first = false;
+        }
 
-}
+        PrintValue(iter -> first, out);
+        out << ":";
+        PrintNode(iter -> second, out);
+    }
+    out << "}";
+    return;
+};
 
 // Шаблон, подходящий для вывода double и int
 //template <typename Value>

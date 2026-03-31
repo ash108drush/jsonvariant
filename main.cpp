@@ -92,6 +92,7 @@ void TestNumbers() {
     // целые числа являются подмножеством чисел с плавающей запятой
     assert(int_node.IsDouble());
     // Когда узел хранит int, можно получить соответствующее ему double-значение
+
     assert(int_node.AsDouble() == 42.0);
     assert(!int_node.IsPureDouble());
     assert(int_node == Node{42});
@@ -109,17 +110,29 @@ void TestNumbers() {
     assert(Print(Node{-42}) == "-42"s);
     assert(Print(Node{-3.5}) == "-3.5"s);
 
+
+  //  std::cout << "json: " <<LoadJSON("42"s).GetRoot().AsInt();
     assert(LoadJSON("42"s).GetRoot() == int_node);
     assert(LoadJSON("123.45"s).GetRoot() == dbl_node);
+    //std::cout << "json: " <<LoadJSON("0.25"s).GetRoot().AsDouble() ;
+
     assert(LoadJSON("0.25"s).GetRoot().AsDouble() == 0.25);
+
     assert(LoadJSON("3e5"s).GetRoot().AsDouble() == 3e5);
     assert(LoadJSON("1.2e-5"s).GetRoot().AsDouble() == 1.2e-5);
+
     assert(LoadJSON("1.2e+5"s).GetRoot().AsDouble() == 1.2e5);
+
     assert(LoadJSON("-123456"s).GetRoot().AsInt() == -123456);
+
     assert(LoadJSON("0").GetRoot() == Node{0});
+
     assert(LoadJSON("0.0").GetRoot() == Node{0.0});
+
     // Пробелы, табуляции и символы перевода строки между токенами JSON файла игнорируются
+
     assert(LoadJSON(" \t\r\n\n\r 0.0 \t\r\n\n\r ").GetRoot() == Node{0.0});
+
 }
 
 void TestStrings() {
@@ -129,6 +142,7 @@ void TestStrings() {
 
     assert(!str_node.IsInt());
     assert(!str_node.IsDouble());
+   // std::cout << Print(str_node);
 
     assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
 
@@ -140,6 +154,7 @@ void TestStrings() {
     assert(Print(LoadJSON(escape_chars).GetRoot()) == "\"\\r\\n\\t\\\"\\\\\""s);
     // Пробелы, табуляции и символы перевода строки между токенами JSON файла игнорируются
     assert(LoadJSON("\t\r\n\n\r \"Hello\" \t\r\n\n\r ").GetRoot() == Node{"Hello"s});
+
 }
 
 void TestBool() {
@@ -174,7 +189,7 @@ void TestArray() {
     assert(LoadJSON("[ 1 \r \n ,  \r\n\t 1.23, \n \n  \t\t  \"Hello\" \t \n  ] \n  "s).GetRoot()
            == arr_node);
 }
-/*
+
 void TestMap() {
     Node dict_node{Dict{{"key1"s, "value1"s}, {"key2"s, 42}}};
     assert(dict_node.IsMap());
@@ -195,6 +210,7 @@ void TestMap() {
 
 void TestErrorHandling() {
     MustFailToLoad("["s);
+
     MustFailToLoad("]"s);
 
     MustFailToLoad("{"s);
@@ -227,12 +243,14 @@ void TestErrorHandling() {
     MustThrowLogicError([&array_node] {
         array_node.AsBool();
     });
+
 }
 
 void Benchmark() {
     const auto start = std::chrono::steady_clock::now();
     Array arr;
     arr.reserve(1'000);
+
     for (int i = 0; i < 1'000; ++i) {
         arr.emplace_back(Dict{
             {"int"s, 42},
@@ -244,28 +262,38 @@ void Benchmark() {
             {"map"s, Dict{{"key"s, "value"s}}},
         });
     }
+
     std::stringstream strm;
     json::Print(Document{arr}, strm);
+
     const auto doc = json::Load(strm);
+   /*
     assert(doc.GetRoot() == arr);
     const auto duration = std::chrono::steady_clock::now() - start;
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << "ms"sv
               << std::endl;
-}
 */
+}
+
 
 }  // namespace
 
 int main() {
 
     TestNull();
-    /*
-    TestNumbers();
+
+   TestNumbers();
+
     TestStrings();
-    TestBool();
+
+   TestBool();
+
     TestArray();
+
     TestMap();
+
     TestErrorHandling();
+
     Benchmark();
-*/
+
 }

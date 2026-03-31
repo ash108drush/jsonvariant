@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <variant>
-#include <initializer_list>
+
 
 namespace json {
 using namespace std::literals;
@@ -28,17 +28,19 @@ public:
 
     const Value& GetValue() const { return value_; }
 
-    Node():value_(nullptr) {};
+
     Node(Value value):value_(value){};
-    Node(std::initializer_list<Value> init):
-        items_(init.size()), size_(init.size()), capacity_(init.size()){
-        if(init.size() > 0){
-            copy(init.begin(), init.end(), begin());
-        }
-    }
 
+    Node() = default;
+    Node(std::nullptr_t) {};
+    Node(Dict value) : value_(value) {};
+    Node(Array value) : value_(value) {};
+    Node(bool value) : value_(value) {};
+    Node(int value) : value_(value) {};
+    Node(double value) : value_(value) {};
+    Node(std::string value) : value_(value) {};
 
-    bool operator == (const Node& n) const {
+   bool operator == (const Node& n) const {
         return (n.GetValue() == value_);
     }
 
@@ -50,7 +52,7 @@ public:
         return  std::holds_alternative<int>(value_);
     };
     bool IsDouble() const{
-        return  std::holds_alternative<double>(value_);
+        return  (std::holds_alternative<double>(value_) || std::holds_alternative<int>(value_)) ;
     };
     bool IsPureDouble() const{
         if (!std::holds_alternative<double>(value_)) {
