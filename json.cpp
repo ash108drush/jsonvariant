@@ -264,20 +264,44 @@ Document Load(istream& input) {
     return Document{LoadNode(input)};
 }
 
+void PrintNode(const Node& node, std::ostream& out);
+
 void PrintValue(std::nullptr_t, std::ostream& out) {
     out << "null"sv;
 }
 
-//template <typename Value>
-//std::ostream& operator <<(std::ostream& out,Value value ){
-//    out << std::get<Value>(value);/
-//    return out;
-//}
 // Шаблон, подходящий для вывода double и int
 template <typename Value>
 void PrintValue(const Value& value, std::ostream& out) {
-    out << static_cast<Value>(value);
+    out << value;
 }
+
+//std::string,bool,Array,Dict
+void PrintValue(const std::string str, std::ostream& out) {
+    out << str;
+}
+
+void PrintValue(const Array& arr, std::ostream& out) {
+    for(const Node & nd:arr){
+        PrintNode( nd,out);
+    }
+
+}
+
+//std::map<std::string, Node>;
+void PrintValue(const Dict& dict, std::ostream& out) {
+    for (const auto& [key, value] : dict) {
+        out << key;
+        PrintNode(value,out);
+    }
+
+}
+
+// Шаблон, подходящий для вывода double и int
+//template <typename Value>
+//void PrintValue(const Value& value, std::ostream& out) {
+//    out << static_cast<Value>(value);
+//}
 
 // Другие перегрузки функции PrintValue пишутся аналогично
 
