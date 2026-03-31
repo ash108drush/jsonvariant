@@ -261,6 +261,16 @@ bool Node::AsBool() const {
     }
 }
 
+double Node::AsDouble() const
+{
+    try {
+        return get<double>(value_);
+    } catch (const bad_variant_access& e) {
+        cout << e.what() << endl;
+        return 0.0;
+    }
+}
+
 const string& Node::AsString() const {
     try {
         return get<std::string>(value_);

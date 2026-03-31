@@ -121,7 +121,7 @@ void TestNumbers() {
     // Пробелы, табуляции и символы перевода строки между токенами JSON файла игнорируются
     assert(LoadJSON(" \t\r\n\n\r 0.0 \t\r\n\n\r ").GetRoot() == Node{0.0});
 }
-/*
+
 void TestStrings() {
     Node str_node{"Hello, \"everybody\""s};
     assert(str_node.IsString());
@@ -174,7 +174,7 @@ void TestArray() {
     assert(LoadJSON("[ 1 \r \n ,  \r\n\t 1.23, \n \n  \t\t  \"Hello\" \t \n  ] \n  "s).GetRoot()
            == arr_node);
 }
-
+/*
 void TestMap() {
     Node dict_node{Dict{{"key1"s, "value1"s}, {"key2"s, 42}}};
     assert(dict_node.IsMap());
