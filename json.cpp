@@ -26,15 +26,6 @@ Node LoadArray(istream& input) {
     return Node(std::move(result));
 }
 
-Node LoadInt(istream& input) {
-    int result = 0;
-    while (isdigit(input.peek())) {
-        result *= 10;
-        result += input.get() - '0';
-    }
-
-    return Node(result);
-}
 using Number = std::variant<int, double>;
 
 Number LoadNumber(std::istream& input) {
