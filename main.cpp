@@ -251,7 +251,7 @@ void Benchmark() {
     Array arr;
     arr.reserve(1'000);
 
-    for (int i = 0; i < 1'000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         arr.emplace_back(Dict{
             {"int"s, 42},
             {"double"s, 42.1},
@@ -265,14 +265,14 @@ void Benchmark() {
 
     std::stringstream strm;
     json::Print(Document{arr}, strm);
+   //std::cout << strm.str();
+   const auto doc = json::Load(strm);
 
-    const auto doc = json::Load(strm);
-   /*
     assert(doc.GetRoot() == arr);
     const auto duration = std::chrono::steady_clock::now() - start;
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << "ms"sv
               << std::endl;
-*/
+
 }
 
 

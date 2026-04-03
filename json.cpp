@@ -202,16 +202,35 @@ Node LoadNode(istream& input) {
         return LoadNodeString(input);
     } else {
         if(std::isdigit(c)==0 && c !='-'){
-            std::string line;
-            std::getline(input, line);
-            if(c =='n' &&line.find("ull") != line.npos){
-                return Node(nullptr);
+            if(c =='n'){
+                char u,l1,l2;
+                input >> u;
+                input >> l1;
+                input >> l2;
+                if(u == 'u' && l1=='l' && l2=='l'){
+                    return Node(nullptr);
+
+                }
+
             }
-            if(c =='t' && line.find("rue") != line.npos){
-                return Node(true);
+            if(c =='t' ){
+                char r,u,e;
+                input >> r;
+                input >> u;
+                input >> e;
+                if(r == 'r' && u=='u' && e=='e'){
+                    return Node(true);
+                }
             }
-            if(c =='f' && line.find("alse") != line.npos){
-                return Node(false);
+            if(c =='f'){
+                char a,l,s,e;
+                input >> a;
+                input >> l;
+                input >> s;
+                input >> e;
+                if(a == 'a' && l=='l' && s=='s' && e=='e'){
+                    return Node(false);
+                }
             }
         }else{
             input.putback(c);
