@@ -54,6 +54,13 @@ public:
     bool IsDouble() const{
         return  (std::holds_alternative<double>(value_) || std::holds_alternative<int>(value_)) ;
     };
+
+
+    bool IsPureDouble() const {
+        return std::holds_alternative<double>(value_);
+    }
+
+/*
     bool IsPureDouble() const{
         if (!std::holds_alternative<double>(value_)) {
             return false;  // Не double — сразу false
@@ -61,7 +68,7 @@ public:
         const double d = std::get<double>(value_);
         return d != static_cast<int>(d);  // Если при приведении к int значение меняется — это «чистый» double
     };
-
+*/
     bool IsBool() const{
         return  std::holds_alternative<bool>(value_);
     };
@@ -124,26 +131,11 @@ struct PrintContext {
     }
 };
 
-inline bool operator==(Node &n1,Node & n2){
-    size_t t1 = n1.GetValue().index();
-    size_t t2 = n2.GetValue().index();
-    if(t1 != t2) return false;
-    if(std::get_if<t1>(n1.GetValue()) != std::get_if<t2>(n2.GetValue())) return false;
-    return true;
-}
 
-inline bool operator!=(Node &n1,Node & n2){
-    return !(n1 == n2);
+inline bool operator==(const Document &d1,const Document &d2){
+    return d1.GetRoot() == d2.GetRoot();
 }
-inline bool operator!=(Document &d1,Document& d2){
-    return !(d1 == d2);
-}
-
-
-inline bool operator==(Document &d1,Document &d2){
-    return true;
-}
-inline bool operator!=(Document &d1,Document d2){
+inline bool operator!=(const Document &d1,const Document d2){
     return !(d1 == d2);
 }
 

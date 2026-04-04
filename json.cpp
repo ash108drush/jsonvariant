@@ -198,6 +198,10 @@ Node LoadNode(istream& input) {
                 input >> u;
                 input >> l1;
                 input >> l2;
+                c = input.peek();
+                if(std::isalpha(c) != 0){
+                    throw ParsingError("Bool parsing error");
+                }
                 if(u == 'u' && l1=='l' && l2=='l'){
                     return Node(nullptr);
 
@@ -209,6 +213,11 @@ Node LoadNode(istream& input) {
                 input >> r;
                 input >> u;
                 input >> e;
+                c = input.peek();
+                if(std::isalpha(c) != 0){
+                    throw ParsingError("Bool parsing error");
+                }
+
                 if(r == 'r' && u=='u' && e=='e'){
                     return Node(true);
                 }
@@ -219,23 +228,21 @@ Node LoadNode(istream& input) {
                 input >> l;
                 input >> s;
                 input >> e;
+                c = input.peek();
+                if(std::isalpha(c) != 0){
+                    throw ParsingError("Bool parsing error");
+                }
                 if(a == 'a' && l=='l' && s=='s' && e=='e'){
                     return Node(false);
                 }
             }
         }else{
             input.putback(c);
-           // std::string line;
-            //std::getline(input, line);
-           // cout << line;
-
             Number num = LoadNumber(input);
-            if(std::holds_alternative<int>(num)){
-                return Node(get<int>(num));
-            }
-            if(std::holds_alternative<double>(num)){
-                return Node(get<double>(num));
-            }
+            return std::visit([](const auto& value) {
+                return Node{value};
+            }, num);
+
         }
 
 

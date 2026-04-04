@@ -280,7 +280,7 @@ void Benchmark() {
 
 int main() {
 
-    TestNull();
+//    TestNull();
 
    TestNumbers();
 
@@ -288,12 +288,18 @@ int main() {
 
    TestBool();
 
-    TestArray();
+//    TestArray();
 
-    TestMap();
+//    TestMap();
 
-    TestErrorHandling();
+//    TestErrorHandling();
 
-    Benchmark();
+ //   Benchmark();
+
+//std::stringstream strm;
+//json::Print(Document{"truestory"s}, strm);
+//std::cout << strm.str();
+//const auto doc = json::Load(strm);
+//std::cout <<Print(LoadJSON("truestory"s).GetRoot());
 
 }
